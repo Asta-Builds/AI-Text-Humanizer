@@ -10,7 +10,7 @@ import {
   CheckCircle,
   GraduationCap
 } from "lucide-react";
-import { signUpWithEmail } from "../utils/firebase";
+import { signUpWithEmail } from "../utils/supabase";
 
 interface RegisterViewProps {
   setActivePage: (page: "landing" | "app" | "login" | "register") => void;
@@ -53,25 +53,33 @@ export default function RegisterView({
     }
 
     try {
-      // Attempt actual Firebase auth creation
+      // Attempt actual Supabase auth creation
       try {
         const user = await signUpWithEmail(emailTrimmed, password);
-        setSuccess("Succès ! Compte éducateur créé avec succès via Firebase Auth.");
-        setCurrentUser(user);
-        addLog("success", `Nouveau compte créé : ${emailTrimmed}.`, "Connecté avec succès à la base Firebase Auth.");
+        const mappedUser = {
+          ...user,
+          id: user?.id,
+          uid: user?.id,
+          displayName: fullName || emailTrimmed.split("@")[0],
+          photoURL: null
+        };
+        setSuccess("Succès ! Compte éducateur créé avec succès via Supabase Auth.");
+        setCurrentUser(mappedUser);
+        addLog("success", `Nouveau compte créé : ${emailTrimmed}.`, "Connecté avec succès à la base Supabase Auth.");
         
         setTimeout(() => {
           setActivePage("app");
         }, 1500);
-      } catch (fbErr: any) {
-        console.warn("Firebase sign up error. Falling back to local sandbox representation", fbErr);
+      } catch (sbErr: any) {
+        console.warn("Supabase sign up error. Falling back to local sandbox representation", sbErr);
         
-        if (fbErr.code === "auth/email-already-in-use") {
-          throw fbErr; // throw out to show specific error
+        if (sbErr.message?.includes("already registered") || sbErr.status === 409 || sbErr.code === "auth/email-already-in-use") {
+          throw sbErr; // throw out to show specific error
         }
 
         // Offline Sandbox Bypass
         setCurrentUser({
+          id: "sandbox-registration-id-" + Math.floor(Math.random() * 900),
           uid: "sandbox-registration-id-" + Math.floor(Math.random() * 900),
           email: emailTrimmed,
           displayName: fullName || emailTrimmed.split("@")[0],
@@ -87,10 +95,10 @@ export default function RegisterView({
     } catch (err: any) {
       console.error(err);
       let errMsg = err.message || "Erreur de configuration d'identifiants. Veuillez corriger et réessayer.";
-      if (err.code === "auth/email-already-in-use") {
+      if (err.message?.includes("already registered") || err.status === 409 || err.code === "auth/email-already-in-use") {
         errMsg = "Portail d'inscription : Cette adresse e-mail est déjà rattachée à un utilisateur actif.";
-      } else if (err.code === "auth/invalid-email") {
-        errMsg = "Erreur de format : Veuillez entrer une adresse e-mail universitaire valide.";
+      } else if (err.status === 400 || err.code === "auth/invalid-email") {
+        errMsg = "Erreur de format : Veuillez entrer une adresse e-mail universitaire valide ou vérifiez la force du mot de passe.";
       }
       setError(errMsg);
       addLog("error", "Échec de l'inscription.", errMsg);

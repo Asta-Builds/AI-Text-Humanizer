@@ -1,71 +1,73 @@
-import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, User } from "firebase/auth";
-
-// Cache for access token and auth reference
+// Cache for access token
 let cachedAccessToken: string | null = null;
-let isInitialized = false;
 
 /**
- * Safely fetches firebase config from the server or local file and initializes Firebase
+ * Checks if Google Docs OAuth client ID is configured.
  */
-export async function ensureFirebaseInitialized(): Promise<boolean> {
-  if (isInitialized) return true;
-
-  try {
-    // Dynamically fetch config to prevent static compilation errors on missing config
-    const response = await fetch("/firebase-applet-config.json");
-    if (!response.ok) {
-      console.warn("firebase-applet-config.json not found on backend. OAuth setup needs to be run first.");
-      return false;
-    }
-    
-    const config = await response.json();
-    if (!config.apiKey || !config.authDomain) {
-      console.warn("Missing critical parameters in firebase-applet-config.json");
-      return false;
-    }
-
-    if (getApps().length === 0) {
-      initializeApp(config);
-    }
-    isInitialized = true;
-    return true;
-  } catch (err) {
-    console.error("Failed to initialize Firebase applet configuration dynamically", err);
+export async function ensureGoogleDocsConfigured(): Promise<boolean> {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  if (!clientId || clientId === "your-google-client-id.apps.googleusercontent.com") {
+    console.warn("Google Docs Client ID not found. VITE_GOOGLE_CLIENT_ID needs to be set.");
     return false;
   }
+  return true;
 }
 
+// Retain alias for existing App.tsx references to prevent initial compiling failures
+export const ensureFirebaseInitialized = ensureGoogleDocsConfigured;
+
 /**
- * Sign in with Google requesting Drive create scopes
+ * Sign in with Google using Google Identity Services (GIS) requesting Drive create scopes
  */
-export async function signInWithGoogleDocsScope(): Promise<{ user: User; token: string } | null> {
-  const active = await ensureFirebaseInitialized();
+export async function signInWithGoogleDocsScope(): Promise<{ user: any; token: string } | null> {
+  const active = await ensureGoogleDocsConfigured();
   if (!active) {
-    throw new Error("Google Authentication is not fully configured yet on this development server. Please wait for OAuth Provision.");
+    throw new Error("Google Authentication Client ID is not configured. Please define VITE_GOOGLE_CLIENT_ID in your env.");
   }
 
-  const auth = getAuth();
-  const provider = new GoogleAuthProvider();
-  
-  // Minimize scopes to only creating and managing documents created by this app
-  provider.addScope("https://www.googleapis.com/auth/drive.file");
+  if (typeof (window as any).google === "undefined") {
+    throw new Error("Google Identity Services script not loaded. Check index.html configuration.");
+  }
 
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    const token = credential?.accessToken;
-    
-    if (!token) {
-      throw new Error("No Google Access Token retrieved from credential.");
+  return new Promise((resolve, reject) => {
+    try {
+      const tokenClient = (window as any).google.accounts.oauth2.initTokenClient({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        scope: "https://www.googleapis.com/auth/drive.file",
+        callback: (response: any) => {
+          if (response.error) {
+            console.error("Google Auth error response:", response);
+            reject(new Error(response.error_description || response.error));
+            return;
+          }
+          
+          const token = response.access_token;
+          if (!token) {
+            reject(new Error("No Google Access Token retrieved from credential."));
+            return;
+          }
+
+          cachedAccessToken = token;
+          
+          // Provide mock user shape to match component expectations
+          resolve({
+            user: {
+              email: "authenticated-docs-user@gmail.com",
+              displayName: "Google Docs Author",
+              photoURL: null,
+            },
+            token,
+          });
+        },
+      });
+
+      // Request token (prompts user for permission)
+      tokenClient.requestAccessToken({ prompt: "consent" });
+    } catch (error: any) {
+      console.error("Google OAuth client setup error:", error);
+      reject(error);
     }
-    
-    cachedAccessToken = token;
-    return { user: result.user, token };
-  } catch (error: any) {
-    console.error("Firebase Signin Error:", error);
-    throw error;
-  }
+  });
 }
 
 /**

@@ -8,7 +8,7 @@ import {
   ArrowRight,
   Loader2
 } from "lucide-react";
-import { signInWithEmail, signInWithGoogle } from "../utils/firebase";
+import { signInWithEmail, signInWithGoogle } from "../utils/supabase";
 
 interface LoginViewProps {
   setActivePage: (page: "landing" | "app" | "login" | "register") => void;
@@ -39,11 +39,18 @@ export default function LoginView({
       (password === "Mojo2003@##abdo2001" || password === "mojo2003@##abdo2001");
 
     try {
-      // Attempt actual Firebase Login
+      // Attempt actual Supabase Login
       try {
-        const firebaseUser = await signInWithEmail(emailTrimmed, password);
-        setCurrentUser(firebaseUser);
-        addLog("success", `User authenticated successfully (${emailTrimmed}).`, "Connected securely to Firebase Auth.");
+        const supabaseUser = await signInWithEmail(emailTrimmed, password);
+        const mappedUser = {
+          ...supabaseUser,
+          id: supabaseUser?.id,
+          uid: supabaseUser?.id,
+          displayName: supabaseUser?.user_metadata?.full_name || emailTrimmed.split("@")[0],
+          photoURL: supabaseUser?.user_metadata?.avatar_url || null
+        };
+        setCurrentUser(mappedUser);
+        addLog("success", `User authenticated successfully (${emailTrimmed}).`, "Connected securely to Supabase Auth.");
         
         if (isSpecialAdmin) {
           setIsAdminAuthenticated(true);
@@ -52,12 +59,13 @@ export default function LoginView({
         
         setActivePage("app");
         return;
-      } catch (fbErr: any) {
-        console.warn("Firebase Auth error. Checking for special admin credentials offline:", fbErr);
+      } catch (sbErr: any) {
+        console.warn("Supabase Auth error. Checking for special admin credentials offline:", sbErr);
         
-        // If it is the special administrator bypass, let them in even if offline or Firebase provider is not yet set up
+        // If it is the special administrator bypass, let them in even if offline or Supabase provider is not yet set up
         if (isSpecialAdmin) {
           setCurrentUser({
+            id: "admin-bypass-id",
             uid: "admin-bypass-id",
             email: emailTrimmed,
             displayName: "Administrator Abdo",
@@ -70,20 +78,21 @@ export default function LoginView({
         }
 
         // Standard user offline sandbox fallback is provided for a smooth developer experience
-        if (fbErr.message?.includes("Firebase Auth is not initialized") || fbErr.code === "auth/invalid-credential" || fbErr.code === "user-not-found" || fbErr.code === "auth/configuration-not-found") {
-          throw fbErr; // throw out to handle in outer block
+        if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY || sbErr.message?.includes("invalid") || sbErr.message?.includes("apiKey") || sbErr.status === 400 || sbErr.status === 401) {
+          throw sbErr; // throw out to handle in outer block
         }
-        throw fbErr;
+        throw sbErr;
       }
     } catch (err: any) {
       console.error(err);
       let errMsg = err.message || "Invalid credentials. Please verify your entries.";
-      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+      if (err.status === 400 || err.message?.includes("Invalid login credentials") || err.message?.includes("wrong-password")) {
         errMsg = "Strict Security Guard: The password or email you provided did not match our records.";
-      } else if (err.message?.includes("Firebase Auth is not initialized")) {
-        // Fallback demo account for other users if Firebase hasn't enabled Email/Password yet in console
+      } else if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY || err.message?.includes("invalid apiKey") || err.message?.includes("URL")) {
+        // Fallback demo account for other users if Supabase hasn't enabled Email/Password yet in console
         if (emailTrimmed.includes("@") && password.length >= 6) {
           setCurrentUser({
+            id: "sandbox-userid",
             uid: "sandbox-userid",
             email: emailTrimmed,
             displayName: emailTrimmed.split("@")[0],
@@ -93,7 +102,7 @@ export default function LoginView({
           setActivePage("app");
           return;
         }
-        errMsg = "Firebase requires Email/Password Auth to be enabled. Create any mock email & 6-character password to bypass.";
+        errMsg = "Supabase requires URL & Anon Key to be configured. Create any mock email & 6-character password to bypass.";
       }
       setError(errMsg);
       addLog("error", "Sign in attempts blocked.", errMsg);
@@ -106,33 +115,30 @@ export default function LoginView({
     setLoading(true);
     setError(null);
     try {
-      const fbUser = await signInWithGoogle();
-      setCurrentUser(fbUser);
-      addLog("success", `Google Sign-In sequence completed for ${fbUser.email}.`, "Fetched authenticated cryptographic provider tokens.");
-      
-      if (fbUser.email?.toLowerCase() === "abdelilahdahou7@gmail.com") {
-        setIsAdminAuthenticated(true);
-        addLog("success", "Google login matches administrator. Clearance active.", "Admin permissions assigned.");
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        throw new Error("Supabase is not configured.");
       }
-
-      setActivePage("app");
+      addLog("info", "Redirection vers Google OAuth via Supabase...");
+      await signInWithGoogle();
+      // Le navigateur effectue la redirection
     } catch (err: any) {
       console.error("Google login failed", err);
-      // Give a clean offline sandbox user fallback if they run in standard testing
-      if (err.message?.includes("Firebase Auth is not initialized") || err.message?.includes("not found")) {
+      // Mode Sandbox Hors-ligne si Supabase n'est pas encore provisionné
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY || err.message?.includes("Supabase") || err.message?.includes("not found")) {
         setCurrentUser({
+          id: "google-bypass-id",
           uid: "google-bypass-id",
           email: "abdelilahdahou7@gmail.com",
           displayName: "Google Abdo",
           photoURL: null
         });
         setIsAdminAuthenticated(true);
-        addLog("info", "Administrator session loaded via client offline google mocks.", "Simulated connection.");
+        addLog("info", "Session Administrateur chargée via mocks Google hors-ligne.", "Connexion simulée.");
         setActivePage("app");
         return;
       }
-      setError("Google pop-up was interrupted or credentials rejected. Refer to Developer Traces log.");
-      addLog("error", "OAuth pop-up rejected.", err.message);
+      setError("La redirection Google OAuth a échoué. Référez-vous aux Traces Système.");
+      addLog("error", "Échec de redirection OAuth.", err.message);
     } finally {
       setLoading(false);
     }

@@ -53,8 +53,7 @@ import Navbar from "./components/Navbar";
 import LandingPage from "./components/LandingPage";
 import LoginView from "./components/LoginView";
 import RegisterView from "./components/RegisterView";
-import { getFirebaseAuth, logOut } from "./utils/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { supabase, logOut } from "./utils/supabase";
 
 interface SystemLog {
   id: string;
@@ -169,6 +168,16 @@ function renderDiffText(original: string, humanized: string, showDiff: boolean) 
   return { originalEl, humanizedEl };
 }
 
+const mapSupabaseUser = (user: any) => {
+  if (!user) return null;
+  return {
+    ...user,
+    uid: user.id,
+    displayName: user.user_metadata?.full_name || user.user_metadata?.displayName || user.email?.split("@")[0] || "Éducateur",
+    photoURL: user.user_metadata?.avatar_url || user.user_metadata?.photoURL || null
+  };
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<"visualizer" | "logs" | "apikey" | "docs">("visualizer");
   const [activePage, setActivePage] = useState<"landing" | "app" | "login" | "register">("landing");
@@ -252,14 +261,6 @@ export default function App() {
 
   // Load History on mount, check API key health
   useEffect(() => {
-    const saved = localStorage.getItem("professor_humanizer_history");
-    if (saved) {
-      try {
-        setHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse history from localStorage", e);
-      }
-    }
 
     addLog("info", "Interrogation de la santé de l'intégration du backend sécurisé...", "GET /api/health");
     fetch("/api/health")
@@ -291,24 +292,78 @@ export default function App() {
       }
     });
 
-    // Recover Firebase User Auth State dynamically
-    getFirebaseAuth().then((authInstance) => {
-      if (authInstance) {
-        onAuthStateChanged(authInstance, (user) => {
-          if (user) {
-            setCurrentUser(user);
-            addLog("success", `Session active récupérée pour ${user.email}.`, "Connexion authentifiée sécurisée.");
-            if (user.email?.toLowerCase() === "abdelilahdahou7@gmail.com") {
-              setIsAdminAuthenticated(true);
-              addLog("success", "Autorisation administrative récupérée automatiquement depuis la session.", "Consoles système accessibles.");
-            }
-          } else {
-            setCurrentUser(null);
-          }
-        });
+    // Recover Supabase User Auth State dynamically
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const mapped = mapSupabaseUser(session.user);
+        setCurrentUser(mapped);
+        addLog("success", `Session active récupérée pour ${mapped.email}.`, "Connexion authentifiée sécurisée.");
+        if (mapped.email?.toLowerCase() === "abdelilahdahou7@gmail.com") {
+          setIsAdminAuthenticated(true);
+          addLog("success", "Autorisation administrative récupérée automatiquement depuis la session.", "Consoles système accessibles.");
+        }
       }
     });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        const mapped = mapSupabaseUser(session.user);
+        setCurrentUser(mapped);
+        if (mapped.email?.toLowerCase() === "abdelilahdahou7@gmail.com") {
+          setIsAdminAuthenticated(true);
+        }
+      } else {
+        setCurrentUser(null);
+        setIsAdminAuthenticated(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  // Load history from Supabase if user is logged in, fallback to localStorage
+  useEffect(() => {
+    if (currentUser?.id) {
+      addLog("info", "Synchronisation de l'historique avec Supabase...", `Utilisateur ID: ${currentUser.id}`);
+      supabase
+        .from("user_history")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false })
+        .limit(20)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Failed to fetch history from Supabase:", error);
+            addLog("error", "Échec de récupération de l'historique depuis Supabase.", error.message);
+          } else if (data) {
+            const mappedHistory: HumanizeHistoryItem[] = data.map((item: any) => ({
+              id: item.id,
+              timestamp: new Date(item.created_at).toLocaleString(),
+              originalText: item.original_text,
+              humanizedText: item.humanized_text,
+              options: item.options,
+              metrics: item.metrics
+            }));
+            setHistory(mappedHistory);
+            addLog("success", `Historique synchronisé. ${mappedHistory.length} éléments récupérés depuis Supabase.`);
+          }
+        });
+    } else {
+      // Local fallback for guest users
+      const saved = localStorage.getItem("professor_humanizer_history");
+      if (saved) {
+        try {
+          setHistory(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse history from localStorage", e);
+        }
+      } else {
+        setHistory([]);
+      }
+    }
+  }, [currentUser]);
 
   // Helper function to append to terminal trace logs
   const addLog = (type: SystemLog["type"], message: string, details?: string) => {
@@ -427,9 +482,40 @@ export default function App() {
         }
       };
 
-      const updatedHistory = [newHistoryItem, ...history].slice(0, 20);
-      setHistory(updatedHistory);
-      localStorage.setItem("professor_humanizer_history", JSON.stringify(updatedHistory));
+      if (currentUser?.id) {
+        addLog("info", "Enregistrement de la révision dans la base Supabase...");
+        supabase
+          .from("user_history")
+          .insert({
+            user_id: currentUser.id,
+            original_text: inputText,
+            humanized_text: data.humanizedText,
+            options: { ...options },
+            metrics: newHistoryItem.metrics
+          })
+          .select()
+          .then(({ data: insertData, error }) => {
+            if (error) {
+              console.error("Failed to save history to Supabase:", error);
+              addLog("error", "Impossible de sauvegarder la révision dans Supabase.", error.message);
+            } else if (insertData && insertData[0]) {
+              const savedItem: HumanizeHistoryItem = {
+                id: insertData[0].id,
+                timestamp: new Date(insertData[0].created_at).toLocaleString(),
+                originalText: insertData[0].original_text,
+                humanizedText: insertData[0].humanized_text,
+                options: insertData[0].options,
+                metrics: insertData[0].metrics
+              };
+              setHistory(prev => [savedItem, ...prev].slice(0, 20));
+              addLog("success", "Révision enregistrée dans Supabase.");
+            }
+          });
+      } else {
+        const updatedHistory = [newHistoryItem, ...history].slice(0, 20);
+        setHistory(updatedHistory);
+        localStorage.setItem("professor_humanizer_history", JSON.stringify(updatedHistory));
+      }
 
     } catch (err: any) {
       console.error(err);
@@ -461,10 +547,26 @@ export default function App() {
     addLog("info", `Restauration de l'instantané depuis les archives éducateurs : ${item.id}`, `Profil Cible: ${item.options.profile}`);
   };
 
-  const handleClearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem("professor_humanizer_history");
-    addLog("info", "Historique de l'éducateur entièrement effacé.");
+  const handleClearHistory = async () => {
+    if (currentUser?.id) {
+      addLog("info", "Suppression de l'historique dans Supabase...");
+      const { error } = await supabase
+        .from("user_history")
+        .delete()
+        .eq("user_id", currentUser.id);
+      
+      if (error) {
+        console.error("Failed to clear history from Supabase:", error);
+        addLog("error", "Impossible d'effacer l'historique sur Supabase.", error.message);
+      } else {
+        setHistory([]);
+        addLog("success", "Historique Supabase entièrement effacé.");
+      }
+    } else {
+      setHistory([]);
+      localStorage.removeItem("professor_humanizer_history");
+      addLog("info", "Historique de l'éducateur local entièrement effacé.");
+    }
   };
 
   const handleCopy = () => {
