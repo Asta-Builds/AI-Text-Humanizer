@@ -1,0 +1,6 @@
+{
+  "name": "AI Text Humanizer",
+  "description": "Securely humanize stiff, robotic AI text into natural, engaging, and high-quality human style writing using the Gemini API.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

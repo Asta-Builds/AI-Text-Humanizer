@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HumanFlow Architect - 3-Tier AI Text Humanizer</title>
+    <script>
+      // Gracefully suppress benign sandbox WebSocket connection and closure rejections in preview
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason) {
+          const msg = event.reason.message || String(event.reason);
+          if (msg.includes('WebSocket') || msg.includes('websocket') || msg.includes('closed without opened')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }
+      }, true);
+
+      window.addEventListener('error', function(event) {
+        const msg = event.message || '';
+        if (msg.includes('WebSocket') || msg.includes('websocket') || msg.includes('failed to connect')) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
