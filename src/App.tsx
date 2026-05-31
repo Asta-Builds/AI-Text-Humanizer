@@ -1385,7 +1385,7 @@ ${outputText}
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-100 text-xs font-display tracking-tight">NVIDIA Inference Client</h3>
-                      <p className="text-[10px] font-mono text-indigo-400 font-semibold subtitle">models/stepfun-ai/step-3-7-flash</p>
+                      <p className="text-[10px] font-mono text-indigo-400 font-semibold subtitle">models/stepfun-ai/step-3.7-flash</p>
                     </div>
                   </div>
 

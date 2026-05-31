@@ -170,7 +170,7 @@ const transformLimiter = rateLimit({
   message: { error: "Trop de requêtes. Veuillez réessayer dans une minute." },
 });
 
-const MODEL = "stepfun-ai/step-3-7-flash";
+const MODEL = "stepfun-ai/step-3.7-flash";
 
 async function requireAuth(req: Request, res: Response, next: Function) {
   const authHeader = req.headers.authorization;
@@ -263,7 +263,7 @@ Configuration Parameters:
             { role: "user", content: userPrompt },
           ],
           temperature: temperature,
-          max_tokens: 8192,
+          max_tokens: 16384,
         }),
       });
 
@@ -273,7 +273,8 @@ Configuration Parameters:
       }
 
       const nvData = await nvRes.json() as any;
-      const humanizedText = nvData?.choices?.[0]?.message?.content || "";
+      const msg = nvData?.choices?.[0]?.message;
+      const humanizedText = msg?.content || msg?.reasoning || msg?.reasoning_content || "";
 
       if (!humanizedText.trim()) {
         throw new Error("Received empty text response from NVIDIA API");
