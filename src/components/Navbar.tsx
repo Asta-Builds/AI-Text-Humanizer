@@ -47,12 +47,12 @@ export default function Navbar({
   };
 
   return (
-    <nav className="bg-white/85 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 transition-all font-sans">
+    <nav className="bg-white/90 backdrop-blur-lg border-b border-slate-200/60 sticky top-0 z-50 transition-all font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {/* Logo Brand section */}
+          {/* Logo */}
           <div className="flex items-center gap-8">
-            <button 
+            <button
               onClick={() => {
                 setActivePage("landing");
                 setMobileMenuOpen(false);
@@ -63,31 +63,28 @@ export default function Navbar({
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="font-display font-bold text-slate-800 text-sm tracking-tight leading-none group-hover:text-indigo-650 transition-all">
-                  HumanFlow <span className="text-indigo-600 font-extrabold">Architect</span>
+                <span className="font-display font-bold text-slate-800 text-sm tracking-tight leading-none">
+                  HumanFlow <span className="text-indigo-600">Architect</span>
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium tracking-wide">
                   Moteur de Texte Éducatif
                 </span>
               </div>
             </button>
- 
-            {/* Desktop Navigation Links */}
+
+            {/* Desktop nav */}
             <div className="hidden lg:flex items-center gap-1">
               <button
-                onClick={() => {
-                  setActivePage("landing");
-                }}
+                onClick={() => setActivePage("landing")}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                   activePage === "landing"
                     ? "bg-indigo-50/70 text-indigo-700"
-                    : "text-slate-650 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <Home className="w-4 h-4 shrink-0" />
                 Accueil
               </button>
- 
               <button
                 onClick={() => {
                   setActivePage("app");
@@ -96,13 +93,12 @@ export default function Navbar({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                   activePage === "app" && activeTab === "visualizer"
                     ? "bg-indigo-50/70 text-indigo-700"
-                    : "text-slate-650 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <Layers className="w-4 h-4 shrink-0" />
-                Outil Humaniseur
+                Espace de Travail
               </button>
- 
               <button
                 onClick={() => {
                   setActivePage("app");
@@ -111,13 +107,12 @@ export default function Navbar({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                   activePage === "app" && activeTab === "docs"
                     ? "bg-indigo-50/70 text-indigo-700"
-                    : "text-slate-650 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <BookOpen className="w-4 h-4 shrink-0" />
-                Guide et Rubrique
+                Guide
               </button>
- 
               {isAdminAuthenticated && (
                 <>
                   <button
@@ -128,13 +123,12 @@ export default function Navbar({
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                       activePage === "app" && activeTab === "logs"
                         ? "bg-indigo-50/70 text-indigo-700"
-                        : "text-slate-650 hover:bg-slate-50 hover:text-slate-900"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
                     <Terminal className="w-4 h-4 shrink-0" />
-                    Traces Système
+                    Traces
                   </button>
- 
                   <button
                     onClick={() => {
                       setActivePage("app");
@@ -143,80 +137,52 @@ export default function Navbar({
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all ${
                       activePage === "app" && activeTab === "apikey"
                         ? "bg-indigo-50/70 text-indigo-700"
-                        : "text-slate-650 hover:bg-slate-50 hover:text-slate-900"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
                     <Key className="w-4 h-4 shrink-0" />
-                    Clés d'API
+                    Clés
                   </button>
                 </>
               )}
             </div>
           </div>
- 
-          {/* User Auth controls */}
+
+          {/* Auth controls */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* Admin status indicator */}
             {isAdminAuthenticated && (
-              <button
-                onClick={onLockAdmin}
-                className="px-2.5 py-1.5 bg-amber-50 rounded-xl hover:bg-amber-100 border border-amber-200 text-amber-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all animate-fade-in"
-                title="Verrouiller l'espace Admin"
-              >
+              <button onClick={onLockAdmin} className="px-2.5 py-1.5 bg-amber-50 rounded-xl hover:bg-amber-100 border border-amber-200 text-amber-800 font-semibold text-[11px] flex items-center gap-1.5 transition-all" title="Verrouiller l'espace Admin">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-                Admin Certifié
+                Admin
               </button>
             )}
- 
             <div className="h-4 w-[1px] bg-slate-200"></div>
- 
             {currentUser ? (
               <div className="flex items-center gap-3">
-                {/* Profile Circle */}
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center border border-indigo-200 select-none uppercase">
                     {currentUser.photoURL ? (
-                      <img 
-                        src={currentUser.photoURL} 
-                        alt="User" 
-                        className="w-full h-full rounded-full object-cover" 
-                        referrerPolicy="no-referrer"
-                      />
+                      <img src={currentUser.photoURL} alt="User" className="w-full h-full rounded-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
                       getInitials(currentUser)
                     )}
                   </div>
                   <div className="flex flex-col text-left max-w-32">
-                    <span className="text-xs font-semibold text-slate-800 truncate leading-tight">
-                      {currentUser.displayName || currentUser.email?.split("@")[0] || "Éducateur"}
-                    </span>
-                    <span className="text-[10px] text-slate-400 truncate">
-                      {currentUser.email || "Utilisateur Hors-ligne"}
-                    </span>
+                    <span className="text-xs font-semibold text-slate-800 truncate leading-tight">{currentUser.displayName || currentUser.email?.split("@")[0] || "Éducateur"}</span>
+                    <span className="text-[10px] text-slate-400 truncate">{currentUser.email || "Hors-ligne"}</span>
                   </div>
                 </div>
- 
-                <button
-                  onClick={handleLogout}
-                  className="p-1.5 text-slate-450 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-all cursor-pointer"
-                  title="Se déconnecter"
-                >
+                <button onClick={handleLogout} className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-all cursor-pointer" title="Se déconnecter">
                   <LogLevelIcon className="w-4.5 h-4.5" />
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2.5">
-                <button
-                  onClick={() => setActivePage("login")}
-                  className="px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:text-indigo-650 transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <LogIn className="w-4 h-4 text-slate-500" />
+                <button onClick={() => setActivePage("login")} className="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1 cursor-pointer">
+                  <LogIn className="w-4 h-4" />
                   Connexion
                 </button>
-                <button
-                  onClick={() => setActivePage("register")}
-                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 cursor-pointer transition-all"
-                >
+                <button onClick={() => setActivePage("register")} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 cursor-pointer transition-all">
                   <UserPlus className="w-4 h-4" />
                   S'inscrire
                 </button>

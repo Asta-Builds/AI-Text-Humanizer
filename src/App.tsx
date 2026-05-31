@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { 
-  FileText, 
+import {
+  FileText,
   Terminal, 
   Cpu, 
   Copy, 
@@ -50,6 +50,7 @@ import {
   generateAcademicDocHtml 
 } from "./utils/googleDocsExporter";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import LandingPage from "./components/LandingPage";
 import LoginView from "./components/LoginView";
 import RegisterView from "./components/RegisterView";
@@ -784,37 +785,38 @@ ${outputText}
       {activePage === "app" && (
         <main className="flex-1 max-w-[1440px] w-full mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
         
-        {/* TAB 1: SCHOLARLY WORKSPACE EDITOR */}
+        {/* TAB 1: WORKSPACE - 3 COLUMN LAYOUT */}
         {activeTab === "visualizer" && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* TIER 1: THE FRONTEND INTERFACE (Left Column - 7 spans) */}
-            <section className="lg:col-span-7 flex flex-col gap-5">
-              
-              {/* Header Title Bar */}
-              <div className="flex items-center justify-between bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+
+            {/* Left: Options Panel */}
+            <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-[88px]">
+              <OptionSelector options={options} setOptions={setOptions} />
+            </aside>
+
+            {/* Center: Editor + Results */}
+            <section className="lg:col-span-6 flex flex-col gap-5">
+
+              {/* Status bar */}
+              <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 font-display">
-                    Espace de travail universitaire interactif
-                  </h2>
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500">Espace de Travail</h2>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-400 font-mono">Statut du Sandbox :</span>
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 text-[9px] font-bold rounded-sm uppercase tracking-wider border border-emerald-100 font-mono">
-                    EN LIGNE
-                  </span>
+                  <span className="text-[10px] text-slate-400">Statut :</span>
+                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[9px] font-bold rounded uppercase tracking-wider border border-emerald-100">EN LIGNE</span>
                 </div>
               </div>
 
-              {/* Sample Draft picker */}
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 space-y-3">
+              {/* Presets */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                    <List className="w-3.5 h-3.5 text-indigo-500" />
-                    Charger des brouillons ou rédactions robotiques d'étudiants
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                    <List className="w-3 h-3 text-indigo-500" />
+                    Charger un Exemple
                   </label>
-                  <span className="text-[10px] text-slate-400 font-sans hidden sm:inline">Modèles d'IA prêts à l'emploi</span>
+                  <span className="text-[9px] text-slate-400">Modèles prêts à l'emploi</span>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                   {PRESET_EXAMPLES.map((example) => (
@@ -826,399 +828,223 @@ ${outputText}
                       title={example.description}
                     >
                       <span className="font-semibold text-slate-700 block truncate">{example.title}</span>
-                      <span className="text-[9px] text-slate-400 mt-0.5 block truncate">{example.category}</span>
+                      <span className="text-[8px] text-slate-400 mt-0.5 block truncate">{example.category}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Workspace inputs */}
-              <div className="flex flex-col gap-4">
-                
-                {/* Text Input Block */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 flex flex-col relative">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-indigo-500" />
-                      Zone d'écriture pour modèles IA robotiques
-                    </label>
-                    {inputText && (
-                      <button
-                        onClick={handleClearInput}
-                        className="text-xs text-slate-400 hover:text-rose-500 transition-colors cursor-pointer flex items-center gap-1"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" /> Réinitialiser
+              {/* Text Input */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-indigo-500" />
+                    Texte à Humaniser
+                  </label>
+                  {inputText && (
+                    <button onClick={handleClearInput} className="text-[10px] text-slate-400 hover:text-rose-500 transition-colors cursor-pointer flex items-center gap-1">
+                      <Trash2 className="w-3 h-3" /> Effacer
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  id="input-text-area"
+                  className="w-full h-36 bg-slate-50/70 border border-slate-200 rounded-xl p-4 text-xs text-slate-800 leading-relaxed font-sans focus:outline-hidden focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
+                  placeholder="Collez votre texte ici..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                />
+                <div className="flex justify-between items-center text-[10px] text-slate-400 mt-2">
+                  <span>Mots : <strong className="text-slate-600">{inputText.split(/\s+/).filter(w => w.length > 0).length}</strong></span>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              {!currentUser ? (
+                <div className="flex flex-col items-center justify-center p-6 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm text-center">
+                  <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 mb-2">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <h4 className="font-bold text-sm text-slate-800">Connectez-vous pour continuer</h4>
+                  <div className="flex gap-2.5 mt-4">
+                    <button onClick={() => setActivePage("login")} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer transition-all">
+                      <LogIn className="w-3.5 h-3.5 inline mr-1" />
+                      Connexion
+                    </button>
+                    <button onClick={() => setActivePage("register")} className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold cursor-pointer transition-all">
+                      <UserPlus className="w-3.5 h-3.5 inline mr-1" />
+                      S'inscrire
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center py-2">
+                  <button
+                    id="transform-text-btn"
+                    onClick={() => handleHumanize()}
+                    disabled={isLoading || !inputText.trim()}
+                    className={`px-8 py-3.5 rounded-2xl font-bold text-sm shadow-lg flex items-center gap-2.5 transition-all cursor-pointer ${
+                      isLoading
+                        ? "bg-slate-700 text-slate-400 cursor-not-allowed"
+                        : "bg-slate-900 hover:bg-indigo-600 text-white shadow-slate-200"
+                    }`}
+                  >
+                    {isLoading ? (
+                      <><RefreshCw className="w-4 h-4 animate-spin" /> Humanisation en cours...</>
+                    ) : (
+                      <><Zap className="w-4 h-4 text-amber-400" /> Lancer le Raffinage <ArrowRight className="w-4 h-4" /></>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 flex items-start gap-3">
+                  <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs leading-normal">{error}</p>
+                    {error.includes("key") && (
+                      <button onClick={() => { if (isAdminAuthenticated) setActiveTab("apikey"); else setShowAdminModal(true); }} className="mt-2 text-[11px] font-semibold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer">
+                        <Key className="w-3.5 h-3.5" /> Panneau des secrets
                       </button>
                     )}
                   </div>
-                  
-                  <textarea
-                    id="input-text-area"
-                    className="w-full h-44 bg-slate-50/70 border border-slate-200 rounded-2xl p-4 text-xs lg:text-sm text-slate-800 leading-relaxed font-sans focus:outline-hidden focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none"
-                    placeholder="Collez des paragraphes de brouillon non polis, des rédactions robotiques d'étudiants ou des plans de référence..."
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                  />
-                  
-                  <div className="flex justify-between items-center text-[10px] text-slate-400 mt-2 px-1">
-                    <span>
-                      Mots : <strong className="text-slate-600">{inputText.split(/\s+/).filter(w => w.length > 0).length}</strong>
-                    </span>
-                    <span>Prend en charge les résumés de recherche ou pages de couverture</span>
+                </div>
+              )}
+
+              {/* Output */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col min-h-[12rem]">
+                <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    Résultat Humanisé
+                  </label>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button onClick={handleExportToWordFile} disabled={!outputText} className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold flex items-center gap-1 shrink-0 cursor-pointer transition-all ${
+                      !outputText ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                    }`}>
+                      <FileText className="w-3 h-3" /> Word
+                    </button>
+                    <button onClick={handleExportToGoogleDocsFile} disabled={!outputText || isExportingToDocs} className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold flex items-center gap-1 shrink-0 cursor-pointer transition-all ${
+                      !outputText ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" : isExportingToDocs ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed" : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                    }`}>
+                      {isExportingToDocs ? <RefreshCw className="w-3 h-3 animate-spin" /> : <ExternalLink className="w-3 h-3" />}
+                      Docs
+                    </button>
+                    <button id="copy-to-clipboard-btn" onClick={handleCopy} disabled={!outputText} className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-semibold flex items-center gap-1 shrink-0 cursor-pointer transition-all ${
+                      !outputText ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" : copied ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100"
+                    }`}>
+                      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {copied ? "Copié" : "Copier"}
+                    </button>
+                    <div className="relative">
+                      <button onClick={() => { if (!outputText) return; setIsExportDropdownOpen(!isExportDropdownOpen); }} disabled={!outputText} className={`p-1.5 px-2 rounded-lg border text-[10px] flex items-center shrink-0 cursor-pointer transition-all ${
+                        !outputText ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200"
+                      }`}>
+                        <ChevronDown className={`w-3 h-3 transition-transform ${isExportDropdownOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {isExportDropdownOpen && outputText && (
+                        <>
+                          <div className="fixed inset-0 z-40" onClick={() => setIsExportDropdownOpen(false)} />
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl border border-slate-200 shadow-xl z-50 py-1.5 text-xs">
+                            <div className="px-3 py-1 border-b border-slate-100 text-[9px] font-bold text-slate-400 uppercase tracking-wider">Formats</div>
+                            <button onClick={() => { setIsExportDropdownOpen(false); handleExportActiveMarkdown(); }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 transition-colors">
+                              <Download className="w-3 h-3 text-slate-400" />
+                              <span className="font-semibold text-slate-800">Markdown (.md)</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Secure Parameter Tool Module */}
-                <OptionSelector options={options} setOptions={setOptions} />
-
-                {/* API Action button */}
-                {!currentUser ? (
-                  <div className="relative flex flex-col items-center justify-center p-6 bg-slate-50 border border-slate-200 rounded-3xl shadow-xs mt-3 select-none text-center animate-fade-in">
-                    <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 mb-2">
-                      <Lock className="w-5 h-5 animate-pulse" />
-                    </div>
-                    <h4 className="font-display font-bold text-sm text-slate-800">Passerelle éducateurs verrouillée</h4>
-                    <p className="text-[11px] text-slate-500 max-w-sm mt-1 leading-normal">
-                      Vous devez vous connecter à un compte universitaire ou de chercheur pour accéder aux modèles de traitement de texte de pointe.
-                    </p>
-                    <div className="flex gap-2.5 mt-4 w-full max-w-xs justify-center">
-                      <button
-                        onClick={() => setActivePage("login")}
-                        className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-102"
-                      >
-                        <LogIn className="w-3.5 h-3.5" />
-                        Se connecter
-                      </button>
-                      <button
-                        onClick={() => setActivePage("register")}
-                        className="flex-1 py-2 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-102"
-                      >
-                        <UserPlus className="w-3.5 h-3.5" />
-                        S'inscrire gratuitement
-                      </button>
-                    </div>
+                {isLoading ? (
+                  <div className="flex-1 flex flex-col items-center justify-center py-10 text-center text-slate-400 gap-3">
+                    <div className="w-10 h-10 rounded-full border-4 border-slate-100 border-t-indigo-600 animate-spin" />
+                    <span className="text-xs text-slate-500">Humanisation en cours...</span>
+                  </div>
+                ) : outputText ? (
+                  <div className="flex-1 bg-slate-50/40 border border-slate-200 rounded-xl p-4 text-xs text-slate-800 leading-relaxed whitespace-pre-wrap select-text">
+                    {outputText}
                   </div>
                 ) : (
-                  <div className="relative flex justify-center items-center py-2.5">
-                    <div className="absolute w-full border-t border-dashed border-slate-300"></div>
-                    <button
-                      id="transform-text-btn"
-                      onClick={() => handleHumanize()}
-                      disabled={isLoading || !inputText.trim()}
-                      className={`relative z-10 font-display font-medium text-xs lg:text-sm px-8 py-3.5 rounded-full shadow-lg flex items-center gap-2.5 transition-all group scale-100 hover:scale-102 cursor-pointer ${
-                        isLoading
-                          ? "bg-slate-700 text-slate-400 cursor-not-allowed shadow-none"
-                          : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-150"
-                      }`}
-                    >
-                      {isLoading ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Régulation du rythme syntaxique / Préservation des citations...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 text-yellow-300 group-hover:animate-bounce" />
-                          <span>Humaniser la prose et auditer l'intégrité</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </>
-                      )}
-                    </button>
+                  <div className="flex-1 flex flex-col items-center justify-center py-12 text-center text-slate-300 bg-slate-50/30 border border-dashed border-slate-200/50 rounded-xl p-6">
+                    <Activity className="w-8 h-8 text-slate-200 mb-2" />
+                    <p className="text-xs text-slate-400">Le résultat apparaîtra ici</p>
                   </div>
                 )}
 
-                {/* Error Banner */}
-                {error && (
-                  <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 flex items-start gap-3 animate-headshake">
-                    <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-xs uppercase tracking-wider mb-1">Exception d'autorisation</h4>
-                      <p className="text-xs leading-normal">{error}</p>
-                      {error.includes("key") && (
-                        <button 
-                          onClick={() => {
-                            if (isAdminAuthenticated) {
-                              setActiveTab("apikey");
-                            } else {
-                              setShowAdminModal(true);
-                            }
-                          }}
-                          className="mt-2 text-[11px] font-semibold text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer"
-                        >
-                          <Key className="w-3.5 h-3.5" /> Charger le panneau des secrets
-                        </button>
-                      )}
-                    </div>
+                {currentMetrics && !isLoading && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex gap-4 bg-slate-50/40 p-3 rounded-xl flex-wrap text-[10px]">
+                    <span className="font-bold text-slate-700 capitalize">{options.profile.replace('_', ' ')}</span>
+                    <span className="text-emerald-600 font-bold">-{currentMetrics.roboticScoreBefore - currentMetrics.roboticScoreAfter}% IA</span>
+                    <span className="text-slate-400">{currentMetrics.humanizedWords} mots</span>
                   </div>
                 )}
-
-                {/* Humanized Output Copy block */}
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 flex flex-col relative min-h-[16rem]">
-                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-3">
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
-                      <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      Régulation finale et prose universitaire
-                    </label>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {/* Premium Local Microsoft Word Button */}
-                      <button
-                        title="Télécharger directement en tant que document Microsoft Word (.doc)"
-                        onClick={handleExportToWordFile}
-                        disabled={!outputText}
-                        className={`p-1.5 px-3 rounded-lg border transition-all text-xs flex items-center gap-1.5 shrink-0 font-semibold ${
-                          !outputText 
-                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" 
-                            : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 cursor-pointer shadow-xs"
-                        }`}
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Télécharger Word (.doc)</span>
-                        <span className="sm:hidden">Télécharger Word</span>
-                      </button>
-
-                      {/* Google Docs Cloud Upload Button */}
-                      <button
-                        title="Exporter directement vers votre compte Google Docs"
-                        onClick={handleExportToGoogleDocsFile}
-                        disabled={!outputText || isExportingToDocs}
-                        className={`p-1.5 px-3 rounded-lg border transition-all text-xs flex items-center gap-1.5 shrink-0 font-semibold ${
-                          !outputText 
-                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" 
-                            : isExportingToDocs
-                            ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
-                            : "bg-emerald-50 text-emerald-800 border-emerald-250 hover:bg-emerald-100 cursor-pointer shadow-xs"
-                        }`}
-                      >
-                        {isExportingToDocs ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Exportation...</span>
-                          </>
-                        ) : (
-                          <>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Enregistrer Google Docs</span>
-                            <span className="sm:hidden">Google Docs</span>
-                          </>
-                        )}
-                      </button>
-
-                      {/* Copier / Copy Button */}
-                      <button
-                        id="copy-to-clipboard-btn"
-                        onClick={handleCopy}
-                        disabled={!outputText}
-                        className={`text-xs px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 shrink-0 font-semibold ${
-                          !outputText
-                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed"
-                            : copied
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold"
-                            : "bg-indigo-50 text-indigo-700 border-indigo-150 hover:bg-indigo-100 cursor-pointer shadow-xs"
-                        }`}
-                      >
-                        {copied ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Texte copié !</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Copier la prose</span>
-                            <span className="sm:hidden">Copier</span>
-                          </>
-                        )}
-                      </button>
-
-                      {/* Dropdown for secondary formats like Markdown */}
-                      <div className="relative">
-                        <button
-                          title="Plus d'options d'exportation"
-                          onClick={() => {
-                            if (!outputText) return;
-                            setIsExportDropdownOpen(!isExportDropdownOpen);
-                          }}
-                          disabled={!outputText}
-                          className={`p-1.5 px-2 rounded-lg border transition-all text-xs flex items-center justify-center shrink-0 ${
-                            !outputText 
-                              ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed" 
-                              : "bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200 cursor-pointer"
-                          }`}
-                        >
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExportDropdownOpen ? "rotate-180" : ""}`} />
-                        </button>
-
-                        {isExportDropdownOpen && outputText && (
-                          <>
-                            {/* Overlay to dismiss dropdown */}
-                            <div 
-                              className="fixed inset-0 z-40" 
-                              onClick={() => setIsExportDropdownOpen(false)}
-                            />
-                            
-                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-xl z-50 py-1.5 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-left">
-                              <div className="px-3 py-1 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                Autres formats
-                              </div>
-                              <button
-                                onClick={() => {
-                                  setIsExportDropdownOpen(false);
-                                  handleExportActiveMarkdown();
-                                }}
-                                className="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2 text-slate-700 transition-colors"
-                              >
-                                <Download className="w-3.5 h-3.5 text-slate-400" />
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-slate-800">Markdown (.md)</span>
-                                  <span className="text-[9px] text-slate-400">Fichier local au format Markdown</span>
-                                </div>
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {isLoading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-slate-400 gap-3">
-                      <div className="relative">
-                        <div className="w-12 h-12 rounded-full border-4 border-slate-100 border-t-indigo-600 animate-spin"></div>
-                        <div className="absolute top-0 left-0 w-12 h-12 rounded-full border border-dashed border-indigo-200 animate-pulse"></div>
-                      </div>
-                      <span className="text-xs text-slate-500 font-mono">
-                        Proxy server negotiating with Gemini API core...
-                      </span>
-                    </div>
-                  ) : outputText ? (
-                    <div className="flex-1 bg-slate-50/40 border border-slate-200 rounded-2xl p-4 text-xs lg:text-sm text-slate-800 leading-relaxed font-sans whitespace-pre-wrap select-text">
-                      {outputText}
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center py-16 text-center text-slate-300 bg-slate-50/30 border border-dashed border-slate-200/50 rounded-2xl p-6">
-                      <Activity className="w-9 h-9 text-slate-200 mb-2" />
-                      <p className="text-xs font-semibold text-slate-400">Scholarly Output Area Pending</p>
-                      <p className="text-[10px] text-slate-400 max-w-xs mt-1">Configure options and trigger 'Humanize' above to route polished prose here</p>
-                    </div>
-                  )}
-
-                  {currentMetrics && !isLoading && (
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex gap-4 md:gap-8 bg-slate-50/40 p-3 rounded-xl flex-wrap">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] text-slate-450 uppercase font-mono tracking-wider font-semibold">Vocabulary Target</span>
-                        <span className="text-xs font-bold text-slate-700 capitalize">
-                          {options.readability} Level
-                        </span>
-                      </div>
-                      <div className="flex flex-col border-l border-slate-200 pl-4 lg:pl-8">
-                        <span className="text-[9px] text-slate-450 uppercase font-mono tracking-wider font-semibold">Turnitin/AI Footprint Reduction</span>
-                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                          <TrendingDown className="w-4 h-4" />
-                          -{currentMetrics.roboticScoreBefore - currentMetrics.roboticScoreAfter}% Probable
-                        </span>
-                      </div>
-                      <div className="flex flex-col border-l border-slate-200 pl-4 lg:pl-8 ml-auto">
-                        <span className="text-[9px] text-slate-450 uppercase font-mono tracking-wider font-semibold">Academic Setting</span>
-                        <span className="text-xs font-bold text-indigo-700 capitalize">
-                          {options.profile.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* SENTENCE COMPARATIVE DIFF INSPECTOR */}
-                {currentMetrics?.sentencePairs && currentMetrics.sentencePairs.length > 0 && (
-                  <div className="bg-white rounded-3xl border border-slate-200 p-5 space-y-4" id="sentence-comparative-diff">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
-                      <div className="flex items-center gap-2">
-                        <Scale className="w-4.5 h-4.5 text-indigo-600 shrink-0" />
-                        <div>
-                          <h4 className="font-semibold text-xs text-slate-800 uppercase tracking-wide">Comparatif de Phrases pour Éducateurs</h4>
-                          <p className="text-[10px] text-slate-400 font-sans">Vérifiez les altérations syntaxiques et la précision lexicale segment par segment</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {/* Beautiful styled Toggle Switch */}
-                        <div className="flex items-center gap-2">
-                          <label className="relative inline-flex items-center cursor-pointer select-none">
-                            <input 
-                              type="checkbox" 
-                              checked={showWordDiff}
-                              onChange={(e) => setShowWordDiff(e.target.checked)}
-                              className="sr-only peer"
-                            />
-                            <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                            <span className="ml-2 text-[11px] font-semibold text-slate-600">Surligner les mots spécifiques</span>
-                          </label>
-                        </div>
-                        <span className="text-[9px] bg-indigo-50 text-indigo-700 font-mono font-bold px-2 py-1 rounded border border-indigo-100 uppercase tracking-widest whitespace-nowrap">
-                          {currentMetrics.sentencePairs.length} segments alignés
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans text-xs max-h-80 overflow-y-auto pr-1">
-                      {/* Headers */}
-                      <div className="hidden md:block font-bold text-slate-500 uppercase tracking-wider text-[10px] pl-2">
-                        Structure robotique originale (Friction IA)
-                      </div>
-                      <div className="hidden md:block font-bold text-indigo-600 uppercase tracking-wider text-[10px] pl-2">
-                        Révision stylistique humanisée
-                      </div>
-
-                      {currentMetrics.sentencePairs.map((pair, index) => {
-                        const { originalEl, humanizedEl } = renderDiffText(pair.original, pair.humanized, showWordDiff);
-                        return (
-                          <React.Fragment key={index}>
-                            <div className="bg-white border border-slate-150 p-3 rounded-xl flex flex-col gap-1.5 relative group hover:border-slate-350 transition-colors">
-                              <span className="text-[9px] font-mono font-bold text-slate-300 absolute top-2 right-2">
-                                #{index + 1}
-                              </span>
-                              <div className="text-[12px] text-slate-500 pr-5 leading-relaxed font-sans select-text">
-                                {originalEl}
-                              </div>
-                            </div>
-                            <div className="bg-indigo-50/15 border border-indigo-100/40 p-3 rounded-xl flex flex-col gap-1.5 relative group hover:border-indigo-200/50 transition-colors">
-                              <span className="text-[9px] font-mono font-bold text-indigo-500/50 absolute top-2 right-2">
-                                #{index + 1}
-                              </span>
-                              <div className="text-[12px] text-slate-850 pr-5 leading-relaxed font-sans select-text">
-                                {humanizedEl}
-                              </div>
-                            </div>
-                          </React.Fragment>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Stored History Logs under Cabinets */}
-                <HistoryPanel 
-                  history={history} 
-                  onSelectItem={handleSelectHistoryItem} 
-                  onClearHistory={handleClearHistory} 
-                />
-
               </div>
-            </section>
 
-            {/* ARCHITECTURE RIGHT SIDEBAR */}
-            <section className="lg:col-span-5 flex flex-col gap-6">
-
-              {/* Sophisticated Academic Dashboard Analyzer */}
+              {/* Metrics */}
               {currentMetrics ? (
                 <MetricDisplay metrics={currentMetrics} />
               ) : (
-                <div className="bg-white border border-slate-200 p-6 rounded-3xl text-center shadow-xs flex flex-col items-center justify-center py-10">
-                  <BookOpen className="w-8 h-8 text-slate-300 mb-2.5 animate-bounce" />
-                  <h4 className="font-semibold text-slate-700 text-xs uppercase tracking-wider">Panneau de Métriques</h4>
-                  <p className="text-[11px] text-slate-400 mt-1 max-w-xs leading-normal">Les calibrateurs linguistiques, les plages de perplexité et la répartition des niveaux scolaires cibles s'affichent ici après transformation</p>
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center shadow-sm flex flex-col items-center justify-center py-8">
+                  <BookOpen className="w-7 h-7 text-slate-300 mb-2" />
+                  <h4 className="font-semibold text-slate-600 text-xs uppercase tracking-wider">Métriques</h4>
+                  <p className="text-[11px] text-slate-400 mt-1">Les résultats d'analyse apparaîtront ici</p>
+                </div>
+              )}
+
+              {/* Sentence Diff */}
+              {currentMetrics?.sentencePairs && currentMetrics.sentencePairs.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4" id="sentence-comparative-diff">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+                    <div className="flex items-center gap-2">
+                      <Scale className="w-4 h-4 text-indigo-600 shrink-0" />
+                      <h4 className="font-semibold text-xs text-slate-800 uppercase tracking-wide">Comparaison</h4>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="relative inline-flex items-center cursor-pointer select-none">
+                        <input type="checkbox" checked={showWordDiff} onChange={(e) => setShowWordDiff(e.target.checked)} className="sr-only peer" />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                        <span className="ml-2 text-[10px] font-semibold text-slate-600">Diff</span>
+                      </label>
+                      <span className="text-[9px] bg-indigo-50 text-indigo-700 font-mono font-bold px-2 py-1 rounded border border-indigo-100 uppercase tracking-widest">
+                        {currentMetrics.sentencePairs.length} segments
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-sans text-xs max-h-80 overflow-y-auto pr-1">
+                    {currentMetrics.sentencePairs.map((pair, index) => {
+                      const { originalEl, humanizedEl } = renderDiffText(pair.original, pair.humanized, showWordDiff);
+                      return (
+                        <React.Fragment key={index}>
+                          <div className="bg-white border border-slate-200 p-3 rounded-xl relative group">
+                            <span className="text-[8px] font-bold text-slate-300 absolute top-2 right-2">#{index + 1}</span>
+                            <div className="text-[11px] text-slate-500 pr-4 leading-relaxed">{originalEl}</div>
+                          </div>
+                          <div className="bg-indigo-50/15 border border-indigo-100/40 p-3 rounded-xl relative group">
+                            <span className="text-[8px] font-bold text-indigo-500/50 absolute top-2 right-2">#{index + 1}</span>
+                            <div className="text-[11px] text-slate-800 pr-4 leading-relaxed">{humanizedEl}</div>
+                          </div>
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
             </section>
+
+            {/* Right: History & Activity */}
+            <aside className="lg:col-span-3 flex flex-col gap-6 sticky top-[88px]">
+              <HistoryPanel
+                history={history}
+                onSelectItem={handleSelectHistoryItem}
+                onClearHistory={handleClearHistory}
+              />
+            </aside>
 
           </div>
         )}
@@ -1562,11 +1388,7 @@ ${outputText}
       </main>
       )}
 
-      {/* FOOTER */}
-      <footer className="text-center py-6 text-[11px] text-slate-400 bg-white border-t border-slate-200 mt-auto">
-        <p>© 2026 HumanFlow Architect. Développé pour les éditeurs académiques, les chercheurs et les rédacteurs professionnels.</p>
-        <p className="mt-1 opacity-70">Application des normes de télémétrie zéro confiance et de cryptage AES TLS sur serveur proxy Node Express.</p>
-      </footer>
+      {activePage !== "app" && <Footer />}
 
       {/* ADMIN SECURE VAULT MODAL */}
       {showAdminModal && (

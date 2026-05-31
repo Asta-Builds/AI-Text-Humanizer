@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Login",
+    "prompt": "Design the Login page in the SAME style as the confirmed SaaS design. Use the same brand nav bar (HumanFlow Architect logo, nav links), same workspace grid background pattern, same gradient hero style. The login form should be a clean centered card with: email input with mail icon, password input with lock icon, submit button (indigo-600 primary), Google OAuth button, and a link to create an account. Match EXACTLY the same fonts (Inter, Space Grotesk, JetBrains Mono), colors (indigo-600 primary, slate grays), border-radius (xl/2xl/3xl), shadow system, and overall minimal elegant feel. Add the decorative gradient blobs. Keep the global footer. Use ONLY the fonts, colors, spacing, and component styles defined in the design system."
+  },
+  {
+    "title": "Register",
+    "prompt": "Design the Register page in the SAME style as the confirmed SaaS design. Use the same brand nav bar, workspace grid background, gradient decoration blobs. The registration form should be a centered card with: role toggle (Educateurs / Chercheurs), full name input, email input, password input, confirm password input, submit button (indigo-600 primary). Add a link to login. Use the same fonts, colors (indigo-600 primary, slate neutrals, emerald success, rose error), border-radius, and shadows. Keep the global footer. Use ONLY the fonts, colors, spacing, and component styles defined in the design system."
+  },
+  {
+    "title": "App Workspace",
+    "prompt": "Design the main App Workspace page in the SAME style as the confirmed SaaS design. Use the same brand nav bar, grid background, and footer. The workspace should have: a large text input area, a side panel for options (tone profile buttons: Scholarly Paper, Grant, Lecture, Recommendation plus General: Conversational, Corporate, Creative, Storyteller; grade level: Organic, High School, Undergraduate, Doctoral; creativity: Fidelity, Balanced, Expansive; toggles for: Academic Integrity Shield, Outline-to-Narrative, Purge Clichés, Retain Layout). A prominent button. Results area showing: AI footprint before/after gauges (progress bars), word counts, Lexical Diversity, Burstiness Flow, clichés count. A sentence-by-sentence diff comparison. A History panel with search, filter, export buttons. Use the same fonts, colors, border-radius, shadows, and components patterns as the confirmed design. Use ONLY the fonts, colors, spacing, and component styles defined in the design system."
+  }
+]

@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - HumanFlow Architect</title>
+  <meta name="view-transition" content="same-origin">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;650;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <link rel="prefetch" href="https://p.superdesign.dev/draft/d341a41c-cf5c-4920-af6e-f4cb6cb56208" as="document">
+  <link rel="prefetch" href="https://p.superdesign.dev/draft/56175e8d-56f8-44b9-ab22-fba384c634c9" as="document">
+
+  <style>
+    @view-transition { navigation: auto; }
+    :root {
+      --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      background-color: #f8fafc;
+    }
+    .font-display {
+      font-family: var(--font-display);
+    }
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+    .workspace-grid {
+      background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px), linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* View Transition Logic */
+    ::view-transition-old(main-nav),
+    ::view-transition-new(main-nav),
+    ::view-transition-old(nav-brand),
+    ::view-transition-new(nav-brand),
+    ::view-transition-old(global-footer),
+    ::view-transition-new(global-footer) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+
+    ::view-transition-old(main-content) {
+      animation: 0.25s ease-out both fade-out;
+    }
+    ::view-transition-new(main-content) {
+      animation: 0.25s ease-in 0.1s both fade-in;
+    }
+
+    @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    ::view-transition-old(root), ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen bg-slate-50 flex flex-col relative overflow-hidden">
+    <!-- Grid Background Layer -->
+    <div class="absolute inset-0 workspace-grid [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 pointer-events-none z-0"></div>
+
+    <!-- Navigation (Persistent) -->
+    <nav style="view-transition-name: main-nav" class="bg-white border-b border-slate-200/80 sticky top-0 z-50 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center gap-8">
+            <a href="https://p.superdesign.dev/draft/d341a41c-cf5c-4920-af6e-f4cb6cb56208" id="nav-brand-logo" style="view-transition-name: nav-brand" class="flex items-center gap-2.5 group cursor-pointer no-underline">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-all">
+                <iconify-icon icon="lucide:sparkles" class="text-xl"></iconify-icon>
+              </div>
+              <div class="flex flex-col text-left">
+                <span class="font-display font-bold text-slate-800 text-sm tracking-tight leading-none group-hover:text-indigo-650 transition-all">
+                  HumanFlow <span class="text-indigo-600 font-extrabold">Architect</span>
+                </span>
+                <span class="text-[10px] text-slate-400 font-medium tracking-wide">
+                  Moteur de Texte ├ëducatif
+                </span>
+              </div>
+            </a>
+
+            <div class="hidden lg:flex items-center gap-1">
+              <a href="https://p.superdesign.dev/draft/d341a41c-cf5c-4920-af6e-f4cb6cb56208" id="nav-home" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide text-slate-650 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <iconify-icon icon="lucide:home" class="w-4 h-4"></iconify-icon>
+                Accueil
+              </a>
+              <a href="#tool" id="nav-tool" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide text-slate-650 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <iconify-icon icon="lucide:layers" class="w-4 h-4"></iconify-icon>
+                Outil Humaniseur
+              </a>
+              <a href="#docs" id="nav-docs" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide text-slate-650 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                <iconify-icon icon="lucide:book-open" class="w-4 h-4"></iconify-icon>
+                Guide et Rubrique
+              </a>
+            </div>
+          </div>
+
+          <div class="hidden lg:flex items-center gap-3">
+            <div class="h-4 w-[1px] bg-slate-200"></div>
+            <div class="flex items-center gap-2.5">
+              <a href="https://p.superdesign.dev/draft/56175e8d-56f8-44b9-ab22-fba384c634c9" id="nav-login" class="px-3.5 py-1.5 text-xs font-bold bg-indigo-50/70 text-indigo-700 rounded-lg flex items-center gap-1 cursor-pointer">
+                <iconify-icon icon="lucide:log-in" class="w-4 h-4"></iconify-icon>
+                Connexion
+              </a>
+              <a href="#signup" id="nav-signup" class="px-4 py-1.5 bg-slate-900 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1 cursor-pointer transition-all">
+                <iconify-icon icon="lucide:user-plus" class="w-4 h-4"></iconify-icon>
+                S'inscrire
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main style="view-transition-name: main-content" class="flex-1 flex flex-col items-center justify-center p-6 relative z-10">
+      <div class="w-full max-w-md">
+        <!-- Login Card -->
+        <div class="bg-white border border-slate-200 rounded-[32px] shadow-2xl overflow-hidden">
+          <div class="p-8 md:p-10">
+            <div class="text-center mb-10">
+              <h1 class="text-3xl font-display font-bold text-slate-900 mb-2">Ravi de vous revoir</h1>
+              <p class="text-slate-500 text-sm">Acc├⌐dez ├á votre espace de raffinage acad├⌐mique</p>
+            </div>
+
+            <form action="#dashboard" class="space-y-6">
+              <div class="space-y-2">
+                <label for="email" class="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Adresse e-mail</label>
+                <div class="relative">
+                  <iconify-icon icon="lucide:mail" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></iconify-icon>
+                  <input type="email" id="email" placeholder="nom@exemple.com" class="w-full pl-12 pr-4 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-900 font-medium transition-all placeholder:text-slate-300" required>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <div class="flex justify-between items-end">
+                  <label for="password" class="block text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Mot de passe</label>
+                  <a href="#forgot-password" class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:text-indigo-700">Oubli├⌐ ?</a>
+                </div>
+                <div class="relative">
+                  <iconify-icon icon="lucide:lock" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></iconify-icon>
+                  <input type="password" id="password" placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó" class="w-full pl-12 pr-4 py-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-slate-900 font-medium transition-all placeholder:text-slate-300" required>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-login-submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm tracking-wide shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 group">
+                Se connecter
+                <iconify-icon icon="lucide:arrow-right" class="group-hover:translate-x-1 transition-transform"></iconify-icon>
+              </button>
+            </form>
+
+            <div class="relative my-8">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-100"></div>
+              </div>
+              <div class="relative flex justify-center text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                <span class="bg-white px-4">Ou continuer avec</span>
+              </div>
+            </div>
+
+            <button type="button" id="btn-google-login" class="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-2xl font-bold text-sm tracking-wide transition-all flex items-center justify-center gap-3">
+              <iconify-icon icon="logos:google-icon" class="text-lg"></iconify-icon>
+              Google
+            </button>
+
+            <p class="mt-8 text-center text-sm text-slate-500">
+              Pas encore de compte ? 
+              <a href="#signup" id="link-signup-redirect" class="text-indigo-600 font-bold hover:underline ml-1">S'inscrire gratuitement</a>
+            </p>
+          </div>
+          
+          <!-- Accent bar at bottom of card -->
+          <div class="h-1.5 bg-gradient-to-r from-indigo-500 via-violet-600 to-indigo-700"></div>
+        </div>
+
+        <!-- Quick Help -->
+        <div class="mt-8 flex items-center justify-center gap-6">
+          <a href="https://p.superdesign.dev/draft/d341a41c-cf5c-4920-af6e-f4cb6cb56208" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 flex items-center gap-1.5 transition-colors">
+            <iconify-icon icon="lucide:arrow-left" class="text-sm"></iconify-icon>
+            Retour ├á l'accueil
+          </a>
+          <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+          <a href="#support" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 flex items-center gap-1.5 transition-colors">
+            Besoin d'aide ?
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Global Footer (Persistent) -->
+    <footer style="view-transition-name: global-footer" class="bg-slate-950 py-12 border-t border-white/5 relative z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white">
+               <iconify-icon icon="lucide:sparkles" class="text-base"></iconify-icon>
+            </div>
+            <span class="text-slate-400 text-[11px] font-bold uppercase tracking-[0.2em]">
+              HumanFlow Architect ┬⌐ 2024
+            </span>
+          </div>
+          <div class="flex items-center gap-8">
+            <a href="#terms" id="footer-terms" class="text-slate-500 hover:text-white text-[11px] font-bold uppercase tracking-widest transition-colors">Conditions</a>
+            <a href="#privacy" id="footer-privacy" class="text-slate-500 hover:text-white text-[11px] font-bold uppercase tracking-widest transition-colors">Confidentialit├⌐</a>
+            <a href="#support" id="footer-support" class="text-slate-500 hover:text-white text-[11px] font-bold uppercase tracking-widest transition-colors">Support Technique</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
