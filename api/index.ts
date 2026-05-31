@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import helmet from "helmet";
 import cors from "cors";
@@ -8,19 +7,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiKey = process.env.GEMINI_API_KEY;
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || "";
+const NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
 const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-const ai = new GoogleGenAI({
-  apiKey: apiKey || "",
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
 
 const AI_CLICHES = [
   "delve", "tapestry", "testament", "beacon", "pivotal", "synergy", "elevate", 
@@ -179,6 +170,8 @@ const transformLimiter = rateLimit({
   message: { error: "Trop de requêtes. Veuillez réessayer dans une minute." },
 });
 
+const MODEL = "stepfun-ai/step-3-7-flash";
+
 async function requireAuth(req: Request, res: Response, next: Function) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -197,7 +190,7 @@ async function requireAuth(req: Request, res: Response, next: Function) {
 }
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", apiKeyConfigured: !!apiKey });
+  res.json({ status: "ok", apiKeyConfigured: !!NVIDIA_API_KEY });
 });
 
 app.post("/api/transform", requireAuth, transformLimiter, async (req: Request, res: Response) => {
@@ -212,9 +205,9 @@ app.post("/api/transform", requireAuth, transformLimiter, async (req: Request, r
         return res.status(400).json({ error: "Le texte dépasse la limite de 50 000 caractères." });
       }
 
-      if (!apiKey) {
+      if (!NVIDIA_API_KEY) {
         return res.status(500).json({ 
-          error: "Gemini API key is not configured." 
+          error: "NVIDIA API key is not configured." 
         });
       }
 
@@ -257,19 +250,33 @@ Configuration Parameters:
 - Bullet Points To Narrative Prose: ${bulletToNarrative ? "Yes, transform stiff lists of bullets into cohesive, storytelling paragraph blocks" : "No, retain markdown format layout"}
 - Academic Integrity / Plagiarism Safeguard: ${plagiarismSafeguard ? "Yes, ensure critical statistics, names, citations, formulas, and exact double-quotes are 100% untouched." : "Standard preservation"}`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash-lite",
-        contents: userPrompt,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: temperature,
+      const nvRes = await fetch(`${NVIDIA_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${NVIDIA_API_KEY}`,
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            { role: "system", content: SYSTEM_INSTRUCTION },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: temperature,
+          max_tokens: 8192,
+        }),
       });
 
-      const humanizedText = response.text || "";
+      if (!nvRes.ok) {
+        const errBody = await nvRes.text();
+        throw new Error(`NVIDIA API error ${nvRes.status}: ${errBody}`);
+      }
+
+      const nvData = await nvRes.json() as any;
+      const humanizedText = nvData?.choices?.[0]?.message?.content || "";
 
       if (!humanizedText.trim()) {
-        throw new Error("Received empty text response from Gemini API");
+        throw new Error("Received empty text response from NVIDIA API");
       }
 
       const humanizedAnalysis = analyzeText(humanizedText);

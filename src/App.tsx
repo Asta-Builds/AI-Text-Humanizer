@@ -268,7 +268,7 @@ export default function App() {
           if (data.apiKeyConfigured) {
             addLog("success", "Backend en ligne. Client API développeur Gemini approuvé.", "Autorisé à analyser les soumissions universitaires.");
           } else {
-            addLog("error", "Serveur Vite actif mais GEMINI_API_KEY est manquante.", "Veuillez définir GEMINI_API_KEY dans l'espace Paramètres > Secrets.");
+            addLog("error", "Serveur actif mais NVIDIA_API_KEY est manquante.", "Veuillez définir NVIDIA_API_KEY dans les variables d'environnement Vercel.");
           }
         } else {
           setApiKeyConfigured(false);
@@ -1384,8 +1384,8 @@ ${outputText}
                       <Cpu className="w-5 h-5 text-indigo-400" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-100 text-xs font-display tracking-tight">Gemini 3.5 Flash Client</h3>
-                      <p className="text-[10px] font-mono text-indigo-400 font-semibold subtitle">models/gemini-3.5-flash</p>
+                      <h3 className="font-bold text-slate-100 text-xs font-display tracking-tight">NVIDIA Inference Client</h3>
+                      <p className="text-[10px] font-mono text-indigo-400 font-semibold subtitle">models/stepfun-ai/step-3-7-flash</p>
                     </div>
                   </div>
 
@@ -1442,8 +1442,8 @@ ${outputText}
                 <div className="space-y-3">
                   <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border border-slate-200/60">
                     <div className="min-w-0">
-                      <span className="font-mono text-xs font-bold text-slate-700 block">GEMINI_API_KEY</span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5 text-ellipsis overflow-hidden">Injectée de manière sécurisée côté serveur</span>
+                      <span className="font-mono text-xs font-bold text-slate-700 block">NVIDIA_API_KEY</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5 text-ellipsis overflow-hidden">Définie dans l'environnement Vercel</span>
                     </div>
                     <div>
                       {apiKeyConfigured === null ? (
@@ -1484,25 +1484,25 @@ ${outputText}
                 </div>
               </div>
 
-              {/* Instructions */}
+                {/* Instructions */}
               <div className="border border-slate-200 rounded-2xl p-5 space-y-4">
-                <h3 className="font-semibold text-slate-800 text-sm">Configurer les secrets sur Google AI Studio</h3>
+                <h3 className="font-semibold text-slate-800 text-sm">Configurer la clé NVIDIA API</h3>
                 <p className="text-xs text-slate-600 leading-normal">
-                  Pour fournir votre clé d'API de développement ou mettre à jour les identifiants :
+                  Pour configurer la clé d'API NVIDIA :
                 </p>
 
                 <ol className="text-xs text-slate-600 space-y-3 pl-4 list-decimal leading-relaxed">
                   <li>
-                    Ouvrez l'onglet <strong className="text-slate-800 font-sans">Secrets et Clés</strong> dans le menu de configuration de la plateforme.
+                    Ouvrez le tableau de bord <strong className="text-slate-800 font-sans">Vercel</strong> &rarr; Settings &rarr; Environment Variables.
                   </li>
                   <li>
-                    Créez un secret nommé précisément <code className="bg-slate-100 px-1 font-mono text-[11px] text-indigo-600 rounded">GEMINI_API_KEY</code>.
+                    Ajoutez une variable nommée <code className="bg-slate-100 px-1 font-mono text-[11px] text-indigo-600 rounded">NVIDIA_API_KEY</code>.
                   </li>
                   <li>
-                    Collez votre clé API Gemini personnelle.
+                    Collez votre clé API NVIDIA (commence par <code className="bg-slate-100 px-1 font-mono text-[11px] text-indigo-600 rounded">nvapi-</code>).
                   </li>
                   <li>
-                    Enregistrez les modifications. L'environnement sera mis à jour de manière transparente.
+                    Déployez à nouveau. L'environnement sera mis à jour automatiquement.
                   </li>
                 </ol>
               </div>
