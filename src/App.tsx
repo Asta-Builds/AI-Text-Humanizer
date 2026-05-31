@@ -186,9 +186,6 @@ export default function App() {
   // Admin Gateway Authentication state values
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [showAdminModal, setShowAdminModal] = useState<boolean>(false);
-  const [adminEmail, setAdminEmail] = useState<string>("");
-  const [adminPassword, setAdminPassword] = useState<string>("");
-  const [adminError, setAdminError] = useState<string>("");
 
   // Input & Advanced Option States
   const [inputText, setInputText] = useState<string>("");
@@ -435,10 +432,14 @@ export default function App() {
     addLog("request", `Lancement de la transformation : mode ${options.profile}`, `POST /api/transform\n${JSON.stringify({ ...payload, text: payload.text.substring(0, 60) + "..." }, null, 2)}`);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const response = await fetch("/api/transform", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload)
       });
@@ -1583,87 +1584,38 @@ ${outputText}
               </div>
             </div>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const email = adminEmail.trim().toLowerCase();
-                const pass = adminPassword;
-                if (
-                  (email === "abdelilahdahou7@gmail.com" && pass === "mojo2003@##abdo2001") ||
-                  (email === "abdelilahdahou7@gmail.com" && pass === "Mojo2003@##abdo2001") ||
-                  (email === "admin" && pass === "admin")
-                ) {
-                  setIsAdminAuthenticated(true);
-                  setShowAdminModal(false);
-                  setActiveTab("logs");
-                  setAdminEmail("");
-                  setAdminPassword("");
-                  setAdminError("");
-                  addLog("success", "Session administrateur authentifiée avec succès.", "Accès accordé aux journaux système et au panneau des secrets.");
-                } else {
-                  setAdminError("Identifiant ou mot de passe incorrect.");
-                  addLog("error", "Échec d'authentification administrateur.", "Signature d'identifiant ou mot de passe incorrecte soumise.");
-                }
-              }}
-              className="mt-5 space-y-4"
-            >
-              <div className="space-y-3">
-                <div>
-                  <label className="text-[9px] uppercase font-bold text-slate-500 font-mono tracking-wider block mb-1">
-                    Adresse E-mail
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-sans text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/15 focus:border-indigo-500 transition-all"
-                    placeholder="nom@domaine.com"
-                    value={adminEmail}
-                    onChange={(e) => setAdminEmail(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[9px] uppercase font-bold text-slate-500 font-mono tracking-wider block mb-1">
-                    Mot de passe sécurisé
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/15 focus:border-indigo-500 transition-all"
-                    placeholder="••••••••••••"
-                    value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
-                  />
-                </div>
-
-                {adminError && (
-                  <p className="text-[10px] text-rose-500 font-sans mt-1.5 text-center font-semibold">
-                    {adminError}
+            {currentUser?.email?.toLowerCase() === "abdelilahdahou7@gmail.com" ? (
+              <div className="mt-5 space-y-4">
+                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-center">
+                  <p className="text-xs font-semibold text-emerald-800">
+                    Accès administrateur activé
                   </p>
-                )}
-              </div>
-
-              <div className="flex gap-2">
+                  <p className="text-[10px] text-emerald-600 mt-1">
+                    Connecté en tant que {currentUser.email}
+                  </p>
+                </div>
                 <button
-                  type="button"
                   onClick={() => {
                     setShowAdminModal(false);
-                    setAdminEmail("");
-                    setAdminPassword("");
-                    setAdminError("");
+                    setActiveTab("logs");
+                    addLog("info", "Accès au panneau d'administration.", "Session administrateur confirmée.");
                   }}
-                  className="flex-1 py-2 px-3 border border-slate-200 hover:bg-slate-50 rounded-xl text-xs text-slate-600 font-semibold cursor-pointer transition-all"
+                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer transition-all"
                 >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-xs cursor-pointer transition-all"
-                >
-                  Confirmer
+                  Accéder aux journaux système
                 </button>
               </div>
-            </form>
+            ) : (
+              <div className="mt-5 p-4 bg-amber-50 border border-amber-100 rounded-2xl text-center">
+                <p className="text-xs font-semibold text-amber-800">
+                  Accès restreint
+                </p>
+                <p className="text-[10px] text-amber-600 mt-1">
+                  Les privilèges d'administration sont liés à votre compte Supabase.
+                  Seul l'administrateur désigné peut accéder à ce panneau.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}

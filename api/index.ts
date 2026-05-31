@@ -1,10 +1,18 @@
 import express, { Request, Response } from "express";
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
 dotenv.config();
 
 const apiKey = process.env.GEMINI_API_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 const ai = new GoogleGenAI({
   apiKey: apiKey || "",
   httpOptions: {
@@ -151,13 +159,47 @@ Here are the rules you MUST adhere to:
 
 const app = express();
 
-app.use(express.json({ limit: "5mb" }));
+app.use(helmet());
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://ai-text-humanizer-two.vercel.app",
+  ],
+  credentials: true,
+}));
+app.use(express.json({ limit: "1mb" }));
+
+const transformLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Trop de requêtes. Veuillez réessayer dans une minute." },
+});
+
+async function requireAuth(req: Request, res: Response, next: Function) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Authentification requise. Envoyez un jeton Bearer valide." });
+  }
+
+  const token = authHeader.split("Bearer ")[1];
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data.user) {
+    return res.status(401).json({ error: "Jeton invalide ou expiré." });
+  }
+
+  (req as any).user = data.user;
+  next();
+}
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", apiKeyConfigured: !!apiKey });
 });
 
-app.post("/api/transform", async (req: Request, res: Response) => {
+app.post("/api/transform", requireAuth, transformLimiter, async (req: Request, res: Response) => {
     try {
       const { text, options } = req.body;
 
@@ -165,9 +207,13 @@ app.post("/api/transform", async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Missing or invalid input text" });
       }
 
+      if (text.length > 50000) {
+        return res.status(400).json({ error: "Le texte dépasse la limite de 50 000 caractères." });
+      }
+
       if (!apiKey) {
         return res.status(500).json({ 
-          error: "Gemini API key is not configured. Please add GEMINI_API_KEY in Settings > Secrets." 
+          error: "Gemini API key is not configured." 
         });
       }
 
@@ -211,7 +257,7 @@ Configuration Parameters:
 - Academic Integrity / Plagiarism Safeguard: ${plagiarismSafeguard ? "Yes, ensure critical statistics, names, citations, formulas, and exact double-quotes are 100% untouched." : "Standard preservation"}`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: userPrompt,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
@@ -268,7 +314,7 @@ Configuration Parameters:
     } catch (error: any) {
       console.error("Error in /api/transform:", error);
       return res.status(500).json({ 
-        error: error.message || "An unexpected error occurred during humanization." 
+        error: "Une erreur inattendue s'est produite lors de l'humanisation. Veuillez réessayer."
       });
     }
   });

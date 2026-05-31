@@ -34,9 +34,6 @@ export default function LoginView({
     setError(null);
 
     const emailTrimmed = email.trim().toLowerCase();
-    const isSpecialAdmin = 
-      emailTrimmed === "abdelilahdahou7@gmail.com" && 
-      (password === "Mojo2003@##abdo2001" || password === "mojo2003@##abdo2001");
 
     try {
       // Attempt actual Supabase Login
@@ -52,31 +49,11 @@ export default function LoginView({
         setCurrentUser(mappedUser);
         addLog("success", `User authenticated successfully (${emailTrimmed}).`, "Connected securely to Supabase Auth.");
         
-        if (isSpecialAdmin) {
-          setIsAdminAuthenticated(true);
-          addLog("success", "Administrative clearance granted automatically.", "Special administrative signature verified.");
-        }
-        
         setActivePage("app");
         return;
       } catch (sbErr: any) {
-        console.warn("Supabase Auth error. Checking for special admin credentials offline:", sbErr);
+        console.warn("Supabase Auth error:", sbErr);
         
-        // If it is the special administrator bypass, let them in even if offline or Supabase provider is not yet set up
-        if (isSpecialAdmin) {
-          setCurrentUser({
-            id: "admin-bypass-id",
-            uid: "admin-bypass-id",
-            email: emailTrimmed,
-            displayName: "Administrator Abdo",
-            photoURL: null
-          });
-          setIsAdminAuthenticated(true);
-          addLog("success", "Admin logged in via localized offline signature fallback.", "Bypassed standard authentication gates.");
-          setActivePage("app");
-          return;
-        }
-
         // Standard user offline sandbox fallback is provided for a smooth developer experience
         if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY || sbErr.message?.includes("invalid") || sbErr.message?.includes("apiKey") || sbErr.status === 400 || sbErr.status === 401) {
           throw sbErr; // throw out to handle in outer block
@@ -123,20 +100,6 @@ export default function LoginView({
       // Le navigateur effectue la redirection
     } catch (err: any) {
       console.error("Google login failed", err);
-      // Mode Sandbox Hors-ligne si Supabase n'est pas encore provisionné
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY || err.message?.includes("Supabase") || err.message?.includes("not found")) {
-        setCurrentUser({
-          id: "google-bypass-id",
-          uid: "google-bypass-id",
-          email: "abdelilahdahou7@gmail.com",
-          displayName: "Google Abdo",
-          photoURL: null
-        });
-        setIsAdminAuthenticated(true);
-        addLog("info", "Session Administrateur chargée via mocks Google hors-ligne.", "Connexion simulée.");
-        setActivePage("app");
-        return;
-      }
       setError("La redirection Google OAuth a échoué. Référez-vous aux Traces Système.");
       addLog("error", "Échec de redirection OAuth.", err.message);
     } finally {
