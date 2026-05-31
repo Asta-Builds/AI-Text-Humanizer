@@ -258,7 +258,7 @@ Configuration Parameters:
 - Academic Integrity / Plagiarism Safeguard: ${plagiarismSafeguard ? "Yes, ensure critical statistics, names, citations, formulas, and exact double-quotes are 100% untouched." : "Standard preservation"}`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.0-flash-lite",
         contents: userPrompt,
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
